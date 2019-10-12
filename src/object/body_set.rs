@@ -42,9 +42,9 @@ pub trait BodySet<N: RealField> {
     fn contains(&self, handle: Self::Handle) -> bool;
 
     /// Iterate through all the bodies on this set, applying the closure `f` on them.
-    fn foreach(&self, f: impl FnMut(Self::Handle, &Self::Body));
+    fn foreach(&self, f: &dyn FnMut(Self::Handle, &Self::Body));
     /// Mutable iterate through all the bodies on this set, applying the closure `f` on them.
-    fn foreach_mut(&mut self, f: impl FnMut(Self::Handle, &mut Self::Body));
+    fn foreach_mut(&mut self, f: &mut dyn FnMut(Self::Handle, &mut Self::Body));
 
     /// Gets the handle of one body that has been removed.
     ///
@@ -160,13 +160,13 @@ impl<N: RealField> BodySet<N> for DefaultBodySet<N> {
         self.contains(handle)
     }
 
-    fn foreach(&self, mut f: impl FnMut(Self::Handle, &Self::Body)) {
+    fn foreach(&self, mut f: &dyn FnMut(Self::Handle, &Self::Body)) {
         for (h, b) in self.iter() {
             f(h, b)
         }
     }
 
-    fn foreach_mut(&mut self, mut f: impl FnMut(Self::Handle, &mut Self::Body)) {
+    fn foreach_mut(&mut self, mut f: &mut dyn FnMut(Self::Handle, &mut Self::Body)) {
         for (h, b) in self.iter_mut() {
             f(h, b)
         }

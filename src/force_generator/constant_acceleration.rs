@@ -41,10 +41,14 @@ impl<N: RealField, Handle: BodyHandle> ConstantAcceleration<N, Handle> {
     }
 }
 
-impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
-    ForceGenerator<N, Bodies> for ConstantAcceleration<N, Handle>
+impl<N: RealField, BodyType: ?Sized + Body<N>, Handle: BodyHandle>
+    ForceGenerator<N, Handle, BodyType> for ConstantAcceleration<N, Handle>
 {
-    fn apply(&mut self, _: &IntegrationParameters<N>, bodies: &mut Bodies) {
+    fn apply(
+        &mut self,
+        _: &IntegrationParameters<N>,
+        bodies: &mut dyn BodySet<N, Body = BodyType, Handle = Handle>,
+    ) {
         let acceleration = self.acceleration;
         self.parts.retain(|h| {
             if let Some(body) = bodies.get_mut(h.0) {

@@ -3,7 +3,7 @@ use na::{DVector, RealField, Unit};
 
 use crate::joint::JointConstraint;
 use crate::math::{Point, Vector, DIM};
-use crate::object::{Body, BodyHandle, BodyPartHandle, BodySet};
+use crate::object::{Body, BodyHandle, BodyPartHandle};
 use crate::solver::{
     helper, BilateralConstraint, BilateralGroundConstraint, ForceDirection, ImpulseLimits,
 };
@@ -53,9 +53,7 @@ impl<N: RealField, Handle: BodyHandle> MouseConstraint<N, Handle> {
     }
 }
 
-impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
-    JointConstraint<N, Bodies> for MouseConstraint<N, Handle>
-{
+impl<N: RealField, Handle: BodyHandle> JointConstraint<N, Handle> for MouseConstraint<N, Handle> {
     fn num_velocity_constraints(&self) -> usize {
         DIM
     }
@@ -67,15 +65,14 @@ impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
     fn velocity_constraints(
         &mut self,
         parameters: &IntegrationParameters<N>,
-        bodies: &Bodies,
+        body1: &dyn Body<N>,
+        body2: &dyn Body<N>,
         ext_vels: &DVector<N>,
         ground_j_id: &mut usize,
         j_id: &mut usize,
         jacobians: &mut [N],
         constraints: &mut LinearConstraints<N, usize>,
     ) {
-        let body1 = try_ret!(bodies.get(self.b1.0));
-        let body2 = try_ret!(bodies.get(self.b2.0));
         let part1 = try_ret!(body1.part(self.b1.1));
         let part2 = try_ret!(body2.part(self.b2.1));
 
@@ -154,10 +151,10 @@ impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
     fn cache_impulses(&mut self, _: &LinearConstraints<N, usize>, _: N) {}
 }
 
-impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
-    NonlinearConstraintGenerator<N, Bodies> for MouseConstraint<N, Handle>
+impl<N: RealField, Handle: BodyHandle> NonlinearConstraintGenerator<N, Handle>
+    for MouseConstraint<N, Handle>
 {
-    fn num_position_constraints(&self, _: &Bodies) -> usize {
+    fn num_position_constraints(&self, _: &dyn Body<N>, _: &dyn Body<N>) -> usize {
         0
     }
 
@@ -165,7 +162,8 @@ impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
         &self,
         _: &IntegrationParameters<N>,
         _: usize,
-        _: &mut Bodies,
+        _: &mut dyn Body<N>,
+        _: &mut dyn Body<N>,
         _: &mut [N],
     ) -> Option<GenericNonlinearConstraint<N, Handle>> {
         None

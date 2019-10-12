@@ -3,7 +3,7 @@ use std::ops::Range;
 
 use crate::joint::JointConstraint;
 use crate::math::{AngularVector, Point, Rotation, ANGULAR_DIM};
-use crate::object::{Body, BodyHandle, BodyPartHandle, BodySet};
+use crate::object::{Body, BodyHandle, BodyPartHandle};
 use crate::solver::helper;
 use crate::solver::{
     GenericNonlinearConstraint, IntegrationParameters, LinearConstraints,
@@ -79,8 +79,8 @@ impl<N: RealField, Handle: BodyHandle> CartesianConstraint<N, Handle> {
     }
 }
 
-impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
-    JointConstraint<N, Bodies> for CartesianConstraint<N, Handle>
+impl<N: RealField, Handle: BodyHandle> JointConstraint<N, Handle>
+    for CartesianConstraint<N, Handle>
 {
     fn is_broken(&self) -> bool {
         self.broken
@@ -97,15 +97,14 @@ impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
     fn velocity_constraints(
         &mut self,
         _: &IntegrationParameters<N>,
-        bodies: &Bodies,
+        body1: &dyn Body<N>,
+        body2: &dyn Body<N>,
         ext_vels: &DVector<N>,
         ground_j_id: &mut usize,
         j_id: &mut usize,
         jacobians: &mut [N],
         constraints: &mut LinearConstraints<N, usize>,
     ) {
-        let body1 = try_ret!(bodies.get(self.b1.0));
-        let body2 = try_ret!(bodies.get(self.b2.0));
         let part1 = try_ret!(body1.part(self.b1.1));
         let part2 = try_ret!(body2.part(self.b2.1));
 
@@ -160,12 +159,12 @@ impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
     }
 }
 
-impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
-    NonlinearConstraintGenerator<N, Bodies> for CartesianConstraint<N, Handle>
+impl<N: RealField, Handle: BodyHandle> NonlinearConstraintGenerator<N, Handle>
+    for CartesianConstraint<N, Handle>
 {
-    fn num_position_constraints(&self, bodies: &Bodies) -> usize {
+    fn num_position_constraints(&self, body1: &dyn Body<N>, body2: &dyn Body<N>) -> usize {
         // FIXME: calling this at each iteration of the non-linear resolution is costly.
-        if self.is_active(bodies) {
+        if self.is_active(body1, body2) {
             1
         } else {
             0
@@ -176,11 +175,10 @@ impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
         &self,
         parameters: &IntegrationParameters<N>,
         _: usize,
-        bodies: &mut Bodies,
+        body1: &mut dyn Body<N>,
+        body2: &mut dyn Body<N>,
         jacobians: &mut [N],
     ) -> Option<GenericNonlinearConstraint<N, Handle>> {
-        let body1 = bodies.get(self.b1.0)?;
-        let body2 = bodies.get(self.b2.0)?;
         let part1 = body1.part(self.b1.1)?;
         let part2 = body2.part(self.b2.1)?;
 

@@ -68,7 +68,7 @@ impl<N: RealField, Handle: BodyHandle> ActivationManager<N, Handle> {
     ) where
         Bodies: BodySet<N, Handle = Handle>,
         Colliders: ColliderSet<N, Handle>,
-        Constraints: JointConstraintSet<N, Bodies>,
+        Constraints: JointConstraintSet<N, Handle>,
     {
         /*
          *
@@ -77,7 +77,7 @@ impl<N: RealField, Handle: BodyHandle> ActivationManager<N, Handle> {
          */
         self.id_to_body.clear();
 
-        bodies.foreach_mut(|handle, body| {
+        bodies.foreach_mut(&mut |handle: Bodies::Handle, body: &mut Bodies::Body| {
             if body.status_dependent_ndofs() != 0 {
                 if body.is_active() {
                     self.update_energy(body);

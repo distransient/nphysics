@@ -2,7 +2,7 @@ use na::{RealField, Unit};
 use ncollide::query::ContactKinematic;
 
 use crate::math::Vector;
-use crate::object::{BodyHandle, BodyPartHandle, BodySet, ColliderHandle};
+use crate::object::{Body, BodyHandle, BodyPartHandle, ColliderHandle};
 use crate::solver::IntegrationParameters;
 
 /// A generic non-linear position constraint.
@@ -56,17 +56,18 @@ impl<N: RealField, Handle: BodyHandle> GenericNonlinearConstraint<N, Handle> {
 }
 
 /// Implemented by structures that generate non-linear constraints.
-pub trait NonlinearConstraintGenerator<N: RealField, Bodies: BodySet<N>> {
+pub trait NonlinearConstraintGenerator<N: RealField, Handle: BodyHandle> {
     /// Maximum of non-linear position constraint this generator needs to output.
-    fn num_position_constraints(&self, bodies: &Bodies) -> usize;
+    fn num_position_constraints(&self, body1: &dyn Body<N>, body2: &dyn Body<N>) -> usize;
     /// Generate the `i`-th position constraint of this generator.
     fn position_constraint(
         &self,
         parameters: &IntegrationParameters<N>,
         i: usize,
-        bodies: &mut Bodies,
+        body1: &mut dyn Body<N>,
+        body2: &mut dyn Body<N>,
         jacobians: &mut [N],
-    ) -> Option<GenericNonlinearConstraint<N, Bodies::Handle>>;
+    ) -> Option<GenericNonlinearConstraint<N, Handle>>;
 }
 
 /// A non-linear position-based non-penetration constraint.
@@ -148,10 +149,10 @@ impl MultibodyJointLimitsNonlinearConstraintGenerator {
     }
 }
 
-impl<N: RealField, Bodies: BodySet<N>> NonlinearConstraintGenerator<N, Bodies>
+impl<N: RealField, Handle: BodyHandle> NonlinearConstraintGenerator<N, Handle>
     for MultibodyJointLimitsNonlinearConstraintGenerator
 {
-    fn num_position_constraints(&self, _: &Bodies) -> usize {
+    fn num_position_constraints(&self, _: &dyn Body<N>, _: &dyn Body<N>) -> usize {
         0
     }
 
@@ -159,9 +160,10 @@ impl<N: RealField, Bodies: BodySet<N>> NonlinearConstraintGenerator<N, Bodies>
         &self,
         _: &IntegrationParameters<N>,
         _: usize,
-        _: &mut Bodies,
+        _: &mut dyn Body<N>,
+        _: &mut dyn Body<N>,
         _: &mut [N],
-    ) -> Option<GenericNonlinearConstraint<N, Bodies::Handle>> {
+    ) -> Option<GenericNonlinearConstraint<N, Handle>> {
         None
     }
 }

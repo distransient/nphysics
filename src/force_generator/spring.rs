@@ -53,10 +53,14 @@ impl<N: RealField, Handle: BodyHandle> Spring<N, Handle> {
     }
 }
 
-impl<N: RealField, Handle: BodyHandle, Bodies: BodySet<N, Handle = Handle>>
-    ForceGenerator<N, Bodies> for Spring<N, Handle>
+impl<N: RealField, BodyType: ?Sized + Body<N>, Handle: BodyHandle>
+    ForceGenerator<N, Handle, BodyType> for Spring<N, Handle>
 {
-    fn apply(&mut self, _: &IntegrationParameters<N>, bodies: &mut Bodies) {
+    fn apply(
+        &mut self,
+        _: &IntegrationParameters<N>,
+        bodies: &mut dyn BodySet<N, Body = BodyType, Handle = Handle>,
+    ) {
         let body1 = try_ret!(bodies.get(self.b1.0));
         let body2 = try_ret!(bodies.get(self.b2.0));
         let part1 = try_ret!(body1.part(self.b1.1));

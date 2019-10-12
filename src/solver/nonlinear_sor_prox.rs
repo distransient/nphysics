@@ -18,7 +18,7 @@ impl NonlinearSORProx {
         N: RealField,
         Bodies: BodySet<N>,
         Colliders: ColliderSet<N, Bodies::Handle>,
-        Constraints: JointConstraintSet<N, Bodies>,
+        Constraints: JointConstraintSet<N, Bodies::Handle>,
     >(
         parameters: &IntegrationParameters<N>,
         bodies: &mut Bodies,
@@ -61,7 +61,7 @@ impl NonlinearSORProx {
     fn solve_generator<
         N: RealField,
         Bodies: BodySet<N>,
-        Gen: ?Sized + NonlinearConstraintGenerator<N, Bodies>,
+        Gen: ?Sized + NonlinearConstraintGenerator<N, Bodies::Handle>,
     >(
         parameters: &IntegrationParameters<N>,
         bodies: &mut Bodies,
