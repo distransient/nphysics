@@ -27,7 +27,7 @@ pub struct MoreauJeanSolver<
     internal_constraints: Vec<Handle>,
 }
 
-impl<N: RealField, Handle: BodyHandle, CollHandle: ColliderHandle, BodyType: ?Sized + Body<N>>
+impl<N: RealField, Handle: BodyHandle, CollHandle: ColliderHandle, BodyType: Body<N>>
     MoreauJeanSolver<N, Handle, CollHandle, BodyType>
 {
     /// Create a new time-stepping scheme with the given contact model.
@@ -238,20 +238,18 @@ impl<N: RealField, Handle: BodyHandle, CollHandle: ColliderHandle, BodyType: ?Si
 
         for handle in island_joints {
             if let Some(joint) = joints.get_mut(*handle) {
-                let anchors = joint.anchors();
-                if let Some(body1) = bodies.get((anchors.0).0) {
-                    if let Some(body2) = bodies.get((anchors.1).0) {
-                        joint.velocity_constraints(
-                            parameters,
-                            body1,
-                            body2,
-                            &self.ext_vels,
-                            &mut ground_j_id,
-                            &mut j_id,
-                            &mut self.jacobians,
-                            &mut self.joint_constraints.velocity,
-                        );
-                    }
+                let (b1, b2) = joint.anchors();
+                if let (Some(body1), Some(body2)) = (bodies.get(b1.0), bodies.get(b2.0)) {
+                    joint.velocity_constraints(
+                        parameters,
+                        body1,
+                        body2,
+                        &self.ext_vels,
+                        &mut ground_j_id,
+                        &mut j_id,
+                        &mut self.jacobians,
+                        &mut self.joint_constraints.velocity,
+                    );
                 }
             }
         }

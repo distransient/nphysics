@@ -68,13 +68,17 @@ impl NonlinearSORProx {
         generator: &Gen,
         jacobians: &mut [N],
     ) {
-        let nconstraints = generator.num_position_constraints(bodies);
+        if let Some((b1, b2)) = generator.maybe_anchors() {
+            if let (Some(body1), Some(body2)) = (bodies.get(b1.0), bodies.get(b2.0)) {
+                let nconstraints = generator.num_position_constraints(&body1, &body2);
 
-        for i in 0..nconstraints {
-            if let Some(mut constraint) =
-                generator.position_constraint(parameters, i, bodies, jacobians)
-            {
-                Self::solve_generic(parameters, bodies, &mut constraint, jacobians)
+                for i in 0..nconstraints {
+                    if let Some(mut constraint) =
+                        generator.position_constraint(parameters, i, body1, body2, jacobians)
+                    {
+                        Self::solve_generic(parameters, bodies, &mut constraint, jacobians)
+                    }
+                }
             }
         }
     }

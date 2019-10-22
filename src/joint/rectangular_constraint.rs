@@ -68,16 +68,16 @@ impl<N: RealField, Handle: BodyHandle> RectangularConstraint<N, Handle> {
 impl<N: RealField, Handle: BodyHandle> JointConstraint<N, Handle>
     for RectangularConstraint<N, Handle>
 {
+    fn anchors(&self) -> (BodyPartHandle<Handle>, BodyPartHandle<Handle>) {
+        (self.b1, self.b2)
+    }
+
     fn is_broken(&self) -> bool {
         self.broken
     }
 
     fn num_velocity_constraints(&self) -> usize {
         4
-    }
-
-    fn anchors(&self) -> (BodyPartHandle<Handle>, BodyPartHandle<Handle>) {
-        (self.b1, self.b2)
     }
 
     fn velocity_constraints(
@@ -194,6 +194,10 @@ impl<N: RealField, Handle: BodyHandle> JointConstraint<N, Handle>
 impl<N: RealField, Handle: BodyHandle> NonlinearConstraintGenerator<N, Handle>
     for RectangularConstraint<N, Handle>
 {
+    fn maybe_anchors(&self) -> Option<(BodyPartHandle<Handle>, BodyPartHandle<Handle>)> {
+        Some(self.anchors())
+    }
+
     fn num_position_constraints(&self, body1: &dyn Body<N>, body2: &dyn Body<N>) -> usize {
         // FIXME: calling this at each iteration of the non-linear resolution is costly.
         if self.is_active(body1, body2) {

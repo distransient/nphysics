@@ -57,8 +57,12 @@ impl<N: RealField, Handle: BodyHandle> GenericNonlinearConstraint<N, Handle> {
 
 /// Implemented by structures that generate non-linear constraints.
 pub trait NonlinearConstraintGenerator<N: RealField, Handle: BodyHandle> {
+    /// The two body parts affected by this joint.
+    fn maybe_anchors(&self) -> Option<(BodyPartHandle<Handle>, BodyPartHandle<Handle>)>;
+
     /// Maximum of non-linear position constraint this generator needs to output.
     fn num_position_constraints(&self, body1: &dyn Body<N>, body2: &dyn Body<N>) -> usize;
+
     /// Generate the `i`-th position constraint of this generator.
     fn position_constraint(
         &self,
@@ -152,6 +156,10 @@ impl MultibodyJointLimitsNonlinearConstraintGenerator {
 impl<N: RealField, Handle: BodyHandle> NonlinearConstraintGenerator<N, Handle>
     for MultibodyJointLimitsNonlinearConstraintGenerator
 {
+    fn maybe_anchors(&self) -> Option<(BodyPartHandle<Handle>, BodyPartHandle<Handle>)> {
+        None
+    }
+
     fn num_position_constraints(&self, _: &dyn Body<N>, _: &dyn Body<N>) -> usize {
         0
     }

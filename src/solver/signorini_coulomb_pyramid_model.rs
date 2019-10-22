@@ -123,7 +123,7 @@ impl<N: RealField, BodyType: ?Sized + Body<N>, Handle: BodyHandle, CollHandle: C
                     constraints,
                 );
 
-                SignoriniModel::build_position_constraint(bodies, manifold, c, constraints);
+                SignoriniModel::build_position_constraint(&bodies, manifold, c, constraints);
 
                 let dependency;
 

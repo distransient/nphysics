@@ -54,12 +54,12 @@ impl<N: RealField, Handle: BodyHandle> MouseConstraint<N, Handle> {
 }
 
 impl<N: RealField, Handle: BodyHandle> JointConstraint<N, Handle> for MouseConstraint<N, Handle> {
-    fn num_velocity_constraints(&self) -> usize {
-        DIM
-    }
-
     fn anchors(&self) -> (BodyPartHandle<Handle>, BodyPartHandle<Handle>) {
         (self.b1, self.b2)
+    }
+
+    fn num_velocity_constraints(&self) -> usize {
+        DIM
     }
 
     fn velocity_constraints(
@@ -154,6 +154,10 @@ impl<N: RealField, Handle: BodyHandle> JointConstraint<N, Handle> for MouseConst
 impl<N: RealField, Handle: BodyHandle> NonlinearConstraintGenerator<N, Handle>
     for MouseConstraint<N, Handle>
 {
+    fn maybe_anchors(&self) -> Option<(BodyPartHandle<Handle>, BodyPartHandle<Handle>)> {
+        Some(self.anchors())
+    }
+
     fn num_position_constraints(&self, _: &dyn Body<N>, _: &dyn Body<N>) -> usize {
         0
     }
